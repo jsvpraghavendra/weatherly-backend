@@ -43,3 +43,7 @@ in `vite.config.js` is only for local development.
 The API fetches weather and geocoding data from Open-Meteo at runtime, so the
 deployed service needs outbound HTTPS access to `api.open-meteo.com` and
 `geocoding-api.open-meteo.com`.
+
+If a weather request returns `502`, check the service logs for the
+`Open-Meteo forecast request` warning. It records the upstream HTTP status or
+the connection exception needed to diagnose provider/network failures.

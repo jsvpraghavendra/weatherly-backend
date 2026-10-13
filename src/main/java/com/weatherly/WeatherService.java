@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -16,6 +19,8 @@ import org.springframework.web.server.ResponseStatusException;
  */
 @Service
 public class WeatherService {
+
+    private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
 
     private static final String GEO_URL =
             "https://geocoding-api.open-meteo.com/v1/search?name={name}&count={count}&language=en&format=json";
@@ -46,7 +51,11 @@ public class WeatherService {
                     place.path("name").asText(),
                     place.path("admin1").asText(""),
                     place.path("country").asText(""));
+        } catch (RestClientResponseException e) {
+            logger.warn("Open-Meteo geocoding request returned HTTP {}", e.getStatusCode().value());
+            throw unavailable();
         } catch (RestClientException e) {
+            logger.warn("Open-Meteo geocoding request failed", e);
             throw unavailable();
         }
     }
@@ -68,7 +77,11 @@ public class WeatherService {
             out.set("hourly", forecast.get("hourly"));
             out.set("daily", forecast.get("daily"));
             return out;
+        } catch (RestClientResponseException e) {
+            logger.warn("Open-Meteo forecast request returned HTTP {}", e.getStatusCode().value());
+            throw unavailable();
         } catch (RestClientException e) {
+            logger.warn("Open-Meteo forecast request failed", e);
             throw unavailable();
         }
     }
@@ -93,8 +106,10 @@ public class WeatherService {
                     out.add(item);
                 }
             }
+        } catch (RestClientResponseException e) {
+            logger.warn("Open-Meteo city suggestions returned HTTP {}", e.getStatusCode().value());
         } catch (RestClientException e) {
-            // Suggestions are optional: return an empty list on failure.
+            logger.warn("Open-Meteo city suggestions request failed", e);
         }
         return out;
     }

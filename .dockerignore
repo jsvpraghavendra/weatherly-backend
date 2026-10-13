@@ -1,8 +1,2 @@
-.git
-.gitignore
-.idea
-*.iml
-target
-.env
-.env.*
-!.env.example
+target/
+.git/

@@ -9,5 +9,6 @@ WORKDIR /app
 RUN useradd --system --uid 10001 appuser
 COPY --from=build --chown=appuser:appuser /app/target/weatherly-backend-1.0.0.jar app.jar
 USER 10001
+ENV PORT=8080
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
